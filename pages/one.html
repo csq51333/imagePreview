@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <h1>one模版html-pages中</h1>
+    <h2>我得写上名字：<%- name%></h2>
+    <h2><%=title%> <%=userName%></h2>
+    <h1>下面是for循环输出模版</h1>
+    <ul>
+      <%for(var i = 0;i<list.length;i++){%>
+        <li><%= list[i] %></li>
+      <%}%>
+    </ul>
+    <h2>原文输出标签</h2>
+    <%- content %>
+    <h2>条件判断</h2>
+    <div onclick="javascript:window.localtion='localhost:3000'">切换路径</div>
+    <div onclick="<%- num++%>">点击++</div>
+    <a href='javascript:<%- num++ %>'>点击</a>
+    <div>num:<%- userName%></div>
+    <% if(num > 20){ %>
+      大于20
+    <% }else{ %>
+      小于20
+    <% } %>
+    <div>这里是收到的name：<%- name%></div>
+    <div>这里是收到的id：<%- id%></div>
+  </body>
+</html>

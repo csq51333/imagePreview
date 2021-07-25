@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>图片浏览处理</title>
+	<style type="text/css">
+		#img{
+			display: inline-block;
+			width: 750px;
+		}
+		.line {
+			margin-bottom: 10px;
+		}
+		#loadWrap {
+			display: none;
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			text-align: center;
+			line-height: 100vh;
+			background: rgba(0, 0, 0, .7);
+			color: white;
+		}
+	</style>
+</head>
+<body>
+<div class="line">
+	<input id="inp" onchange="main()"></input>
+	<button id="last" onclick="lastImage()">上一页</button>
+	<button id="delete" onclick="deleteFn()">删除</button>
+	<button id="next" onclick="nextImage()">下一页</button>
+</div>
+<div class="wrap">
+	<img id="img"></img>
+</div>
+<div id="loadWrap">
+	删除中。。。
+</div>
+</body>
+<script type="text/javascript">
+
+	const img = document.getElementById('img')
+	const inp = document.getElementById('inp')
+	const last = document.getElementById('last')
+	const next = document.getElementById('next')
+	const deleteBtn = document.getElementById('delete')
+	const loadWrap = document.getElementById('loadWrap')
+
+	let deleteLoading = false
+	let imgList = []
+	let currentImageUrl = ""
+	let currentIndex = 0
+
+	function ajax({url, methods, data="", callback}) {
+		let xhr = new XMLHttpRequest()
+		xhr.open(methods, url)
+		if(/post/.test(methods)) {
+			xhr.setRequestHeader('content-type', 'application/json');
+			// xhr.setRequestHeader('imgPage', 'application/json');
+			for(let key in data) {
+				xhr.setRequestHeader(key, encodeURI(data[key]));
+			}
+		}
+		
+		xhr.send(JSON.stringify(data));
+	    xhr.onreadystatechange = function() {
+	    	let res = {}
+	    	try{
+	    		res= JSON.parse(xhr.response)
+	    	} catch(e) {}
+	    	
+	        if (xhr.readyState == 4) {
+	        	callback(res)
+
+	        	/*console.log('可以额外考虑设置', xhr.getResponseHeader('content-type'))
+	            //根据服务器的响应内容格式处理响应结果
+	            if(xhr.getResponseHeader('content-type') === 'application/json'){
+	                //根据返回结果判断验证码是否正确
+	            } else {
+                	console.log(xhr.responseText);
+			    }*/
+	        }
+	    }
+	}
+	const api = {
+		setDeleteImaga(src) {
+			console.log('删除图片', currentImageUrl)
+			ajax({
+				url: `/deleteImage`,
+				data: {
+					currentImageUrl,
+					page: 1
+				},
+				methods: 'post',
+				callback: function (res) {
+					console.log('删除响应', res);
+					main()
+					loadWrap.style.display = 'none'
+					deleteLoading = true
+					if(res?.flag) {
+						console.log('删除成功')
+					}
+				}
+			})
+		},
+		getImageList() {
+			console.log('加载图片')
+			// imageName=image, image是你要加载的文件名
+			let name = inp.value || 'image1'
+			ajax({
+				url: `/imgLoad?imageName=${name}`,
+				methods: 'get',
+				callback: function (res) {
+					console.log('图片链接返回', res)
+					imgList = res.data || []
+					currentImageUrl = imgList[currentIndex]?.url || ""
+					img.src = currentImageUrl
+				}
+			})
+		}
+	}
+	function lastImage() {
+		console.log('打开上衣张图片，== 0 return false,')
+		switchImage(1)
+	}
+	function nextImage() {
+		console.log('打开下一张图片，== arr.length return false')
+		switchImage(-1)
+	}
+	function switchImage(num) {
+		currentIndex = Math.min((imgList.length-1), Math.max(0, currentIndex - num))
+		if(!imgList[currentIndex]) return;
+		let src = imgList[currentIndex]?.url
+		img.src = src
+		console.log('imgList[currentIndex]', src)
+	}
+	async function deleteFn() {
+		console.log('删除请求')
+		if(!imgList[currentIndex]) return;
+		deleteLoading = true
+		loadWrap.style.display = 'block'
+		if(deleteLoading) {
+			deleteLoading = false
+			currentImageUrl = imgList[currentIndex]?.uri || ""
+			let res = await api.setDeleteImaga()
+		}
+	}
+	function deleteConfirm() {
+		if(!imgList[currentIndex]) return;
+		let res = confirm('确认删除？')
+		if(res) {
+			deleteFn()
+		}
+	}
+	function replce(str) {
+		str = str.replce(/\/+/g, "/")
+	}
+	function main() {
+		api.getImageList()
+	}
+	main()
+	document.onkeydown = e => {
+		var event = e || window.event, //在ff下event会做为参数传进来，ie下会在window下
+		keyCode = event.which || event.keyCode
+		console.log(keyCode)
+		switch(keyCode) {
+			case 37:
+			case 65:
+				lastImage();
+				break;
+			case 39:
+			case 68:
+				nextImage();
+				break;
+			case 83:
+			case 88:
+				deleteConfirm();
+				break;
+		}
+	}
+</script>
+</html>

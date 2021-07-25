@@ -1,0 +1,20 @@
+{
+  "name": "koaejs",
+  "version": "1.0.0",
+  "description": "this is a test,haha",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ChenShiqi",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "exif-js": "^2.3.0",
+    "koa": "^2.7.0",
+    "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0",
+    "koa-views": "^6.2.0",
+    "koa2": "^2.0.0-alpha.7"
+  }
+}
